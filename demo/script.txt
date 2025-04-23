@@ -1,0 +1,42 @@
+# Trigger a build without att/sig
+
+# Show
+#  - TektonConfig
+#  - chain-config
+#  - signing-secrets
+
+# Show images in quay -> no att/sig? We need to add metadata to
+# let Chains that it needs to process the pipeline.
+
+# Trigger a build with att/sig
+
+# Show the commit diff in GitHub
+#   - refer to the Tekton docs on SLSA Provenance for more details
+#     (https://tekton.dev/docs/chains/slsa-provenance/)
+
+# Show the images in quay.
+
+# Show the content of the attestation and signature
+
+TAG=
+
+cosign initialize \
+    --mirror "${TUF_MIRROR}" \
+    --root "${TUF_MIRROR}/root.json"
+
+cosign verify \
+    --key "$COSIGN_PUB" \
+    --rekor-url "$REKOR_SERVER" \
+    "$REGISTRY/rhtap/chains:$TAG"
+
+cosign verify-attestation \
+    --key "$COSIGN_PUB" \
+    --rekor-url "$REKOR_SERVER" \
+    --type slsaprovenance \
+    "$REGISTRY/rhtap/chains:$TAG" \
+| jq '.payload | @base64d | fromjson' \
+| less
+
+# "You get all the information about the pipeline that generated the image,
+# which can then be used by Conforma to validate that the right process was
+# used to generate the artifact and gate the deployment of that artifact."

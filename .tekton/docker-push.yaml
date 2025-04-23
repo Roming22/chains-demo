@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: demo-chains-on-push
+  annotations:
+    pipelinesascode.tekton.dev/on-event: "[push]"
+    pipelinesascode.tekton.dev/on-target-branch: "*"
+    pipelinesascode.tekton.dev/max-keep-runs: "2"
+    pipelinesascode.tekton.dev/pipeline: ".tekton/pipelines/docker-build-rhtap.yaml"
+    pipelinesascode.tekton.dev/task-0: ".tekton/tasks/init.yaml"
+    pipelinesascode.tekton.dev/task-1: ".tekton/tasks/git-clone.yaml"
+    pipelinesascode.tekton.dev/task-2: ".tekton/tasks/buildah-rhtap.yaml"
+spec:
+  params:
+    - name: dockerfile
+      value: Dockerfile
+    - name: git-url
+      value: '{{repo_url}}'
+    - name: image-expires-after
+      value: 5d
+    - name: output-image
+      value: rhtap-quay-quay-rhtap-quay.apps.cluster-xmv44.xmv44.sandbox133.opentlc.com/rhtap/chains:{{revision}}
+    - name: path-context
+      value: .
+    - name: revision
+      value: '{{revision}}'
+    - name: event-type
+      value: '{{event_type}}'
+  pipelineRef:
+    name: docker-build-rhtap
+  workspaces:
+    - name: workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi

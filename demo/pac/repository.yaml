@@ -1,0 +1,7 @@
+apiVersion: pipelinesascode.tekton.dev/v1alpha1
+kind: Repository
+metadata:
+  name: demo-chains-repository
+  namespace: rhtap-app-ci
+spec:
+  url: 'https://github.com/roming22-org/demo-chains'
